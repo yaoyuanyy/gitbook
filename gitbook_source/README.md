@@ -43,7 +43,8 @@ $ git push origin github_addr
 注意：github库需要有个分支：gh-pages
 $ curl https://yaoyuanyy.github.io/gitbook/gitbook_web/
 ```
-
+实际写文档时，我的习惯是左边git，右边gitbook
+![](https://github.com/yaoyuanyy/gitbook/blob/gh-pages/pic/git_build.png?raw=true)
 
 gitbook目录结构树
 ```
