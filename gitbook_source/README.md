@@ -39,7 +39,7 @@ gitbook
 $ cd ~/skyler/project/gitbook 
 $ gitbook build gitbook_source gitbook_web
 生成后的文件目录树为底部格式
-$ git push origin github_addr 
+$ git push origin gh-pages 
 注意：github库需要有个分支：gh-pages
 $ curl https://yaoyuanyy.github.io/gitbook/gitbook_web/
 ```
