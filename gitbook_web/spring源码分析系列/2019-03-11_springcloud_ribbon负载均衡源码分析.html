@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>springcloud-ribbon负载均衡源码分析 · GitBook</title>
+        <title>ribbon负载均衡源码分析 · GitBook</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -245,7 +245,7 @@
                 <a href="2019-03-11_springcloud_eureka_client从server同步数据.html">
             
                     
-                    springcloud-eureka_client从server同步数据
+                    eureka_client从server同步数据
             
                 </a>
             
@@ -258,7 +258,7 @@
                 <a href="2019-03-11_springcloud_ribbon负载均衡源码分析.html">
             
                     
-                    springcloud-ribbon负载均衡源码分析
+                    ribbon负载均衡源码分析
             
                 </a>
             
@@ -420,7 +420,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >springcloud-ribbon负载均衡源码分析</a>
+        <a href=".." >ribbon负载均衡源码分析</a>
     </h1>
 </div>
 
@@ -435,7 +435,7 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="zuul1ribbon&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x6E90;&#x7801;&#x5206;&#x6790;">zuul1_ribbon&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x6E90;&#x7801;&#x5206;&#x6790;</h1>
+                                <h1 id="springcloud-zuul1ribbon&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x6E90;&#x7801;&#x5206;&#x6790;">springcloud-zuul1_ribbon&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x6E90;&#x7801;&#x5206;&#x6790;</h1>
 <p>ribbon&#x7684;&#x6838;&#x5FC3;&#x7C7B;&#x662F;ILoadBalancer&#x548C;IRule&#xFF0C;ILoadBalancer&#x9ED8;&#x8BA4;&#x7684;&#x5B9E;&#x73B0;&#x7C7B;&#x4E3A;&#xFF1A;ZoneAwareLoadBalancer&#xFF1B;
 IRule&#x9ED8;&#x8BA4;&#x7684;&#x5B9E;&#x73B0;&#x7C7B;&#x4E3A;&#xFF1A;springcloudribbon&#x662F;ZoneAvoidanceRule,&#x4EE3;&#x7801;&#x5728;RibbonClientConfiguration.ribbonRule(IClientConfig)&#x4E2D;
 &#x800C;ribbon&#x672C;&#x8EAB;&#x7684;&#x9ED8;&#x8BA4;&#x5B9E;&#x73B0;&#x4E3A;RoundRobinRule,&#x4EE3;&#x7801;&#x5728;BaseLoadBalancer.setRule(IRule)&#x4E2D;</p>
@@ -586,7 +586,7 @@ AbstractServerPredicate class</p>
 
             
                 
-                <a href="2019-03-11_springcloud_eureka_client从server同步数据.html" class="navigation navigation-prev " aria-label="Previous page: springcloud-eureka_client从server同步数据">
+                <a href="2019-03-11_springcloud_eureka_client从server同步数据.html" class="navigation navigation-prev " aria-label="Previous page: eureka_client从server同步数据">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
@@ -602,7 +602,7 @@ AbstractServerPredicate class</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"springcloud-ribbon负载均衡源码分析","level":"1.2.3.2.2","depth":4,"next":{"title":"第四节 linux","level":"1.2.4","depth":2,"path":"01.md","ref":"01.md","articles":[]},"previous":{"title":"springcloud-eureka_client从server同步数据","level":"1.2.3.2.1","depth":4,"path":"spring源码分析系列/2019-03-11_springcloud_eureka_client从server同步数据.md","ref":"spring源码分析系列/2019-03-11_springcloud_eureka_client从server同步数据.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"spring源码分析系列/2019-03-11_springcloud_ribbon负载均衡源码分析.md","mtime":"2019-03-12T03:52:19.998Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-03-15T14:51:25.351Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ribbon负载均衡源码分析","level":"1.2.3.2.2","depth":4,"next":{"title":"第四节 linux","level":"1.2.4","depth":2,"path":"01.md","ref":"01.md","articles":[]},"previous":{"title":"eureka_client从server同步数据","level":"1.2.3.2.1","depth":4,"path":"spring源码分析系列/2019-03-11_springcloud_eureka_client从server同步数据.md","ref":"spring源码分析系列/2019-03-11_springcloud_eureka_client从server同步数据.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"spring源码分析系列/2019-03-11_springcloud_ribbon负载均衡源码分析.md","mtime":"2019-03-15T14:57:25.863Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-03-15T14:57:33.944Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

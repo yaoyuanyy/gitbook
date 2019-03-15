@@ -1,4 +1,4 @@
-# zuul1_ribbon负载均衡源码分析
+# springcloud-zuul1_ribbon负载均衡源码分析
 
 ribbon的核心类是ILoadBalancer和IRule，ILoadBalancer默认的实现类为：ZoneAwareLoadBalancer；
 IRule默认的实现类为：springcloudribbon是ZoneAvoidanceRule,代码在RibbonClientConfiguration.ribbonRule(IClientConfig)中

@@ -36,10 +36,13 @@ gitbook
 运行gitbook build 构建服务，具体如下
 4、构建服务(可选)
  格式：gitbook build 源目录 输出目录
+ 
+ 
+真实场景过程：
 $ cd ~/skyler/project/gitbook 
 $ gitbook build gitbook_source gitbook_web
 生成后的文件目录树为底部格式
-$ git push origin gh-pages 
+$ git add/commit/push origin gh-pages 
 注意：github库需要有个分支：gh-pages
 $ curl https://yaoyuanyy.github.io/gitbook/gitbook_web/
 ```

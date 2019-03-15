@@ -1,10 +1,10 @@
-# eureka client从eureka server同步数据
+# springcloud-eureka client从eureka server同步数据
 ## 概述
 从eureka client端看：
 eureka client定时从eureka server中拿到的数据放到自己的DiscoveryClient.LocalRegionApps/remoteRegionVsApps中，而后ribbon、feign等客户端组件使用DiscoveryClient.LocalRegionApps/remoteRegionVsApps查找最新的服务service，完成业务逻辑，如负载均衡
 
 下面一起分析下eureka client是怎么从eureka server同步数据的
-## eureka client从eureka server同步数据过程分析
+## springcloud-eureka client从eureka server同步数据过程分析
 入口
 eureka-client-1.6.2.jar
 DiscoveryClient.getAndStoreFullRegistry()方法代码如下
