@@ -1,21 +1,60 @@
-# springcloud-zuul1_ribbon负载均衡源码分析
+# springcloud-ribbon负载均衡源码分析
+本篇内容特别适合对ribbon有基本了解的同学，初学者可以看运行起ribbon的demo后再来这篇，效率更高。所以ribbon的理论功能和介绍不作阐述，只从源码角度关注细节。
 
-ribbon的核心类是ILoadBalancer和IRule，ILoadBalancer默认的实现类为：ZoneAwareLoadBalancer；
+## 前言
+适应版本：springcloud1和springcloud2
+
+本篇是ribbon结合eureka实现负载均衡的源码解析，学完本篇后，将清楚以下知识点：
+- ribbon实现负载均衡需要的server列表是如何获取和定时同步的，获取到的server列表存放在哪里
+- ribbon优先选择同zone的server实现细节
+- 当没有同zone的server时，ribbon使用哪些服务server完成请求
+- ribbon从同/不同zone的server列表确定一个server的算法
+
+我们知道，eureka server是动态注册服务列表的，当有服务出现故障或下线时，eureka client会更新服务列表，以便eureka client获取最新的server列表。ribbon作为一个eureka client，又是一个consumer组件，从功能上讲他有个两方面的功能
+1. 定期从eureka server获取最新server列表，见[eureka client从server同步数据](https://yaoyuanyy.github.io/gitbook/gitbook_web/spring%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E7%B3%BB%E5%88%97/2019-03-11_springcloud_eureka_client%E4%BB%8Eserver%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE.html)
+2. ribbon定时从eureka client拿到最新server列表。当一个请求过来时从即server列表负载均衡确定一个server，完成request请求
+
+
+本篇主要分析当一个请求过来时，ribbon从server列表负载均衡确定一个server的过程，包括从哪里获取的server列表，怎样确定一个server的。下面进入正文
+
+
+## ribbon核心类
+ribbon进行负载均衡功能有两个核心类: ILoadBalancer和IRule，ILoadBalancer默认的实现类为：ZoneAwareLoadBalancer；
 IRule默认的实现类为：springcloudribbon是ZoneAvoidanceRule,代码在RibbonClientConfiguration.ribbonRule(IClientConfig)中
 而ribbon本身的默认实现为RoundRobinRule,代码在BaseLoadBalancer.setRule(IRule)中
 
-## 项目启动时
-### 地方
 
 
-## 访问url时
-例： http://localhost:5555/api-a/add?a=1&b=2&accessToken=12
+
+## 核心类实例化和初始化
+### 项目启动时涉及ribbon的XXXConfiguration.class有两个: RibbonClientConfiguration.class和EurekaRibbonClientConfiguration.class.
+RibbonClientConfiguration负责ILoadBalancer和IRule的实例化和初始化；
+```
+@Configuration
+@EnableConfigurationProperties
+@Import({HttpClientConfiguration.class, OkHttpRibbonConfiguration.class, RestClientRibbonConfiguration.class, HttpClientRibbonConfiguration.class})
+public class RibbonClientConfiguration {
+    ...
+}
+```
+EurekaRibbonClientConfiguration负责seviceId, zone, server instance相关的初始化工作
+```
+@Configuration
+public class EurekaRibbonClientConfiguration {
+    ...
+}
+```
 
 
-## ribbon定时从eureka client拿到最新服务列表
-先总结下：从哪到哪->从DiscoveryClient.LocalRegionApps/remoteRegionVsApps获取服务列表数据塞到BaseLoadBalacer.upServerList
 
-注意：而eureka client其实是从eureka server中拿到的数据放到自己的DiscoveryClient.LocalRegionApps/remoteRegionVsApps中，详解参见《2019-03-11_springcloud_eureka_client从server同步数据》
+## 一个request请求过来
+当在浏览器访问url时，例: http://localhost:5555/api-a/add?a=1&b=2&accessToken=12  整个负载均衡过程就开始了，如下
+
+
+### ribbon周期性从eureka client拿到最新服务列表
+- 先总结下：从哪到哪->从DiscoveryClient.LocalRegionApps/remoteRegionVsApps获取服务列表数据塞到BaseLoadBalacer.upServerList
+
+注意：而ribbon(eureka client)的DiscoveryClient.LocalRegionApps/remoteRegionVsApps数据是先周期性从eureka server中拿到的，详解参见[eureka client从server同步数据](https://yaoyuanyy.github.io/gitbook/gitbook_web/spring%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E7%B3%BB%E5%88%97/2019-03-11_springcloud_eureka_client%E4%BB%8Eserver%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE.html)
 
 调用栈
 -PollingServerListUpdater.start(UpdateAction)
@@ -138,7 +177,7 @@ public void setServersList(List lsrv) {
 
 
 
-轮询规则实现
+### 轮询规则实现
 AbstractServerPredicate class
 ```
 private int incrementAndGetModulo(int modulo) {
