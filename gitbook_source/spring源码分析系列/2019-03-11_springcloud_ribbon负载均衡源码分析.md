@@ -27,7 +27,7 @@ IRule默认的实现类为：springcloudribbon是ZoneAvoidanceRule,代码在Ribb
 
 
 ## 核心类实例化和初始化
-### 项目启动时涉及ribbon的XXXConfiguration.class有两个: RibbonClientConfiguration.class和EurekaRibbonClientConfiguration.class.
+项目启动时涉及ribbon的XXXConfiguration.class有两个: RibbonClientConfiguration.class和EurekaRibbonClientConfiguration.class.
 RibbonClientConfiguration负责ILoadBalancer和IRule的实例化和初始化；
 ```
 @Configuration
