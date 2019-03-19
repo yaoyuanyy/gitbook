@@ -1,9 +1,9 @@
-# mysql server
+# mysql server timeout 8小时问题
 ## 8小时问题及interactive_timeout和wait_timeout的区别
 
 实际开发遇到的问题：
 ```
-abc
+TODO
 ```
 
 原理说明
