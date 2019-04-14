@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>spring boot @ConditionalOnXXX注解集团解析过程源码分析 · GitBook</title>
+        <title>spring boot 创建bean过程 · GitBook</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -57,10 +57,8 @@
     <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="2019-03-25_springaop_自动生成代理源码解析-TODO.html" />
+    <link rel="next" href="2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.html" />
     
-    
-    <link rel="prev" href="2019-03-31_spring_创建bean过程_todo.html" />
     
 
     </head>
@@ -240,7 +238,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.2.3.2.1" data-path="2019-03-31_spring_创建bean过程_todo.html">
+        <li class="chapter active" data-level="1.2.3.2.1" data-path="2019-03-31_spring_创建bean过程_todo.html">
             
                 <a href="2019-03-31_spring_创建bean过程_todo.html">
             
@@ -253,7 +251,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.2.3.2.2" data-path="2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.html">
+        <li class="chapter " data-level="1.2.3.2.2" data-path="2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.html">
             
                 <a href="2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.html">
             
@@ -530,7 +528,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="../.." >spring boot @ConditionalOnXXX注解集团解析过程源码分析</a>
+        <a href="../.." >spring boot 创建bean过程</a>
     </h1>
 </div>
 
@@ -545,105 +543,154 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="springboot-conditionalonxxx&#x6CE8;&#x89E3;&#x96C6;&#x56E2;&#x89E3;&#x6790;&#x8FC7;&#x7A0B;&#x6E90;&#x7801;&#x5206;&#x6790;">springboot @ConditionalOnXXX&#x6CE8;&#x89E3;&#x96C6;&#x56E2;&#x89E3;&#x6790;&#x8FC7;&#x7A0B;&#x6E90;&#x7801;&#x5206;&#x6790;</h1>
-<ul>
-<li>&#x5165;&#x53E3;&#xFF1A;&#x5F53;@ConditionalOnXXX&#x4F5C;&#x7528;&#x4E8E;&#x5E26;&#x6709;@Configuration&#x7684;&#x7C7B;&#x6216;&#x5E26;&#x6709;@Bean&#x7684;&#x65B9;&#x6CD5;&#x65F6;&#xFF0C;&#x89E3;&#x6790;&#x5165;&#x53E3;&#x4E3A;ConfigurationClassParser.processConfigurationClass(ConfigurationClass)&#x65B9;&#x6CD5;</li>
-</ul>
-<pre><code>protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
-    // &#x83B7;&#x53D6;@Conditional&#x6CE8;&#x89E3;&#xFF0C;&#x68C0;&#x9A8C;condition&#x6761;&#x4EF6;&#x662F;&#x5426;&#x5339;&#x914D;&#x3002;&#x5339;&#x914D;&#x5219;&#x901A;&#x8FC7;&#xFF0C;&#x5F80;&#x4E0B;&#x6267;&#x884C;&#xFF1B;&#x5426;&#x5219;return
-    if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
-        return;
+                                <h1 id="spring&#x521B;&#x5EFA;bean&#x8FC7;&#x7A0B;&#x5206;&#x6790;">spring&#x521B;&#x5EFA;bean&#x8FC7;&#x7A0B;&#x5206;&#x6790;</h1>
+<h2 id="&#x524D;&#x63D0;">&#x524D;&#x63D0;</h2>
+<h4 id="&#x6838;&#x5FC3;&#x7C7B;abstractautowirecapablebeanfactory">&#x6838;&#x5FC3;&#x7C7B;AbstractAutowireCapableBeanFactory</h4>
+<pre><code>protected Object createBean(String beanName, RootBeanDefinition mbd, Object[] args) throws BeanCreationException {
+    if (logger.isDebugEnabled()) {
+        logger.debug(&quot;Creating instance of bean &apos;&quot; + beanName + &quot;&apos;&quot;);
+    }
+    RootBeanDefinition mbdToUse = mbd;
+
+    // Make sure bean class is actually resolved at this point, and
+    // clone the bean definition in case of a dynamically resolved Class
+    // which cannot be stored in the shared merged bean definition.
+    Class&lt;?&gt; resolvedClass = resolveBeanClass(mbd, beanName);
+    if (resolvedClass != null &amp;&amp; !mbd.hasBeanClass() &amp;&amp; mbd.getBeanClassName() != null) {
+        mbdToUse = new RootBeanDefinition(mbd);
+        mbdToUse.setBeanClass(resolvedClass);
     }
 
-    ConfigurationClass existingClass = this.configurationClasses.get(configClass);
-
-    ......
-
-    // Recursively(&#x9012;&#x5F52;) process the configuration class and its superclass hierarchy.
-    SourceClass sourceClass = asSourceClass(configClass);
-    do {
-    // &#x63A5;&#x7740;&#x5904;&#x7406;sourceClass&#x7684;any member (nested) classes&#x3001; @PropertySource&#x3001;@ComponentScan
-    // @Import&#x3001;@ImportResource&#x3001;@Bean&#x3001;Process superclass
-        sourceClass = doProcessConfigurationClass(configClass, sourceClass);
+    // Prepare method overrides.
+    try {
+        mbdToUse.prepareMethodOverrides();
     }
-    while (sourceClass != null);
+    catch (BeanDefinitionValidationException ex) {
+        throw new BeanDefinitionStoreException(mbdToUse.getResourceDescription(),
+                beanName, &quot;Validation of method overrides failed&quot;, ex);
+    }
 
-    this.configurationClasses.put(configClass, configClass);
+    try {
+        // Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+        Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+        if (bean != null) {
+            return bean;
+        }
+    }
+    catch (Throwable ex) {
+        throw new BeanCreationException(mbdToUse.getResourceDescription(), beanName,
+                &quot;BeanPostProcessor before instantiation of bean failed&quot;, ex);
+    }
+
+    Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+    if (logger.isDebugEnabled()) {
+        logger.debug(&quot;Finished creating instance of bean &apos;&quot; + beanName + &quot;&apos;&quot;);
+    }
+    return beanInstance;
 }
-</code></pre><ul>
-<li>&#x6DF1;&#x5165;&#x5206;&#x6790;
-  conditionEvaluator.shouldSkip()&#x4F5C;&#x4E3A;condition&#x5224;&#x65AD;&#x7684;&#x603B;&#x5165;&#x53E3;&#xFF0C;&#x6B64;&#x65B9;&#x6CD5;&#x4F20;&#x5165;Metadata&#x548C;ConfigurationPhase&#xFF0C;&#x65B9;&#x6CD5;&#x4EE3;&#x7801;&#x53EA;&#x5217;&#x51FA;&#x5173;&#x952E;&#x903B;&#x8F91;</li>
-</ul>
-<pre><code>public boolean shouldSkip(AnnotatedTypeMetadata metadata, ConfigurationPhase phase) {
-    if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
-        return false;
-    } 
+</code></pre><pre><code>protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final Object[] args)
+        throws BeanCreationException {
 
-   // &#x4ECE;metadata&#x62FF;&#x5230;conditions(&#x5305;&#x542B;@ConditionalOnXXX&#x7684;&#x96C6;&#x5408;)
-    for (Condition condition : conditions) {
-        if (requiredPhase == null || requiredPhase == phase) {
-        // &#x5173;&#x952E;&#x4EE3;&#x7801;&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x5339;&#x914D;&#x903B;&#x8F91;
-            if (!condition.matches(this.context, metadata)) {
-                return true;
+    // Instantiate the bean.
+    BeanWrapper instanceWrapper = null;
+    if (mbd.isSingleton()) {
+        instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
+    }
+    if (instanceWrapper == null) {
+        instanceWrapper = createBeanInstance(beanName, mbd, args);
+    }
+    final Object bean = (instanceWrapper != null ? instanceWrapper.getWrappedInstance() : null);
+    Class&lt;?&gt; beanType = (instanceWrapper != null ? instanceWrapper.getWrappedClass() : null);
+    mbd.resolvedTargetType = beanType;
+
+    // Allow post-processors to modify the merged bean definition.
+    synchronized (mbd.postProcessingLock) {
+        if (!mbd.postProcessed) {
+            try {
+                applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+            }
+            catch (Throwable ex) {
+                throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+                        &quot;Post-processing of merged bean definition failed&quot;, ex);
+            }
+            mbd.postProcessed = true;
+        }
+    }
+
+    // Eagerly cache singletons to be able to resolve circular references
+    // even when triggered by lifecycle interfaces like BeanFactoryAware.
+    boolean earlySingletonExposure = (mbd.isSingleton() &amp;&amp; this.allowCircularReferences &amp;&amp;
+            isSingletonCurrentlyInCreation(beanName));
+    if (earlySingletonExposure) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(&quot;Eagerly caching bean &apos;&quot; + beanName +
+                    &quot;&apos; to allow for resolving potential circular references&quot;);
+        }
+        addSingletonFactory(beanName, new ObjectFactory&lt;Object&gt;() {
+            @Override
+            public Object getObject() throws BeansException {
+                return getEarlyBeanReference(beanName, mbd, bean);
+            }
+        });
+    }
+
+    // Initialize the bean instance.
+    Object exposedObject = bean;
+    try {
+        populateBean(beanName, mbd, instanceWrapper);
+        if (exposedObject != null) {
+            exposedObject = initializeBean(beanName, exposedObject, mbd);
+        }
+    }
+    catch (Throwable ex) {
+        if (ex instanceof BeanCreationException &amp;&amp; beanName.equals(((BeanCreationException) ex).getBeanName())) {
+            throw (BeanCreationException) ex;
+        }
+        else {
+            throw new BeanCreationException(
+                    mbd.getResourceDescription(), beanName, &quot;Initialization of bean failed&quot;, ex);
+        }
+    }
+
+    if (earlySingletonExposure) {
+        Object earlySingletonReference = getSingleton(beanName, false);
+        if (earlySingletonReference != null) {
+            if (exposedObject == bean) {
+                exposedObject = earlySingletonReference;
+            }
+            else if (!this.allowRawInjectionDespiteWrapping &amp;&amp; hasDependentBean(beanName)) {
+                String[] dependentBeans = getDependentBeans(beanName);
+                Set&lt;String&gt; actualDependentBeans = new LinkedHashSet&lt;String&gt;(dependentBeans.length);
+                for (String dependentBean : dependentBeans) {
+                    if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
+                        actualDependentBeans.add(dependentBean);
+                    }
+                }
+                if (!actualDependentBeans.isEmpty()) {
+                    throw new BeanCurrentlyInCreationException(beanName,
+                            &quot;Bean with name &apos;&quot; + beanName + &quot;&apos; has been injected into other beans [&quot; +
+                            StringUtils.collectionToCommaDelimitedString(actualDependentBeans) +
+                            &quot;] in its raw version as part of a circular reference, but has eventually been &quot; +
+                            &quot;wrapped. This means that said other beans do not use the final version of the &quot; +
+                            &quot;bean. This is often the result of over-eager type matching - consider using &quot; +
+                            &quot;&apos;getBeanNamesOfType&apos; with the &apos;allowEagerInit&apos; flag turned off, for example.&quot;);
+                }
             }
         }
     }
 
-    return false;
-}
-</code></pre><p>&#x6BCF;&#x4E2A;@ConditionalOnXXX&#x7684;&#x5339;&#x914D;&#x7ED3;&#x679C;&#x901A;&#x8FC7;Condition.matches()&#x65B9;&#x6CD5;&#x5F97;&#x51FA;&#x7ED3;&#x679C;&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x5339;&#x914D;&#x903B;&#x8F91;&#x5C31;&#x5728;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x91CC;&#x3002;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF1A;&#x53EA;&#x8981;&#x6709;&#x4E00;&#x4E2A;Condition&#x4E0D;&#x5339;&#x914D;&#xFF0C;&#x65B9;&#x6CD5;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;true&#x3002;&#x8FD9;&#x91CC;&#x7684;Condition&#x5B9E;&#x9645;&#x4E0A;&#x662F;SpringbootCondition,&#x800C;SpringbootCondition&#x662F;OnXXXCondition&#x7684;&#x7236;&#x7C7B;&#xFF0C;&#x8FD9;&#x662F;&#x4E00;&#x4E2A;&#x6A21;&#x677F;&#x65B9;&#x6CD5;&#x6A21;&#x5F0F;&#x3002;&#x6CE8;&#x610F;&#x4E00;&#x70B9;&#xFF1A;@ConditionalOnXXX&#x5BF9;&#x5E94;OnXXXCondition&#x7C7B;&#xFF0C;&#x65B9;&#x6CD5;&#x5185;&#x90E8;&#x5982;&#x4E0B;</p>
-<pre><code>public final boolean matches(ConditionContext context,AnnotatedTypeMetadata metadata) {
-    String classOrMethodName = getClassOrMethodName(metadata);
-    // &#x6BCF;&#x4E2A;OnXXXCondition&#x7C7B;&#x8C03;&#x7528;&#x81EA;&#x5DF1;&#x7684;getMatchOutcome()&#x65B9;&#x6CD5;&#xFF0C;outcome&#x5C01;&#x88C5;&#x4E86;&#x5339;&#x914D;&#x7ED3;&#x679C;
-    ConditionOutcome outcome = getMatchOutcome(context, metadata);
-    // &#x5339;&#x914D;&#x7ED3;&#x679C;&#x653E;&#x5165;ConditionEvaluationReport&#x4E2D;&#xFF0C;&#x7528;&#x4E8E;debug&#x65E5;&#x5FD7;&#x8F93;&#x51FA;
-    recordEvaluation(context, classOrMethodName, outcome);
-    return outcome.isMatch();
-}
-</code></pre><p>&#x5230;&#x8FD9;&#x91CC;&#x90FD;&#x662F;&#x901A;&#x7528;&#x7684;&#x5339;&#x914D;&#x903B;&#x8F91;&#xFF0C;&#x5177;&#x4F53;&#x7684;OnXXXCondition&#x81EA;&#x5DF1;&#x7684;&#x5C5E;&#x6027;&#xFF0C;&#x5B57;&#x6BB5;&#x5339;&#x914D;&#x90FD;&#x6709;&#x81EA;&#x5DF1;&#x7684;getMatchOutcome()&#x65B9;&#x6CD5;&#x8D1F;&#x8D23;&#xFF0C;&#x8FD9;&#x91CC;&#x4EE5;@ConditionalOnProperty(prefix = &quot;spring.aop&quot;, name = &quot;auto&quot;, havingValue = &quot;true&quot;, matchIfMissing = true)&#x4E3A;&#x4F8B;&#x8BF4;&#x4E0B;OnPropertyCondition.getMatchOutcome()&#x7684;&#x903B;&#x8F91;&#xFF0C;&#x5982;&#x4E0B;</p>
-<pre><code>public ConditionOutcome getMatchOutcome(ConditionContext context,
-        AnnotatedTypeMetadata metadata) {
-    List&lt;AnnotationAttributes&gt; allAnnotationAttributes = annotationAttributesFromMultiValueMap(
-            metadata.getAllAnnotationAttributes(ConditionalOnProperty.class.getName()));
-    for (AnnotationAttributes annotationAttributes : allAnnotationAttributes) {
-        ConditionOutcome outcome = determineOutcome(annotationAttributes,context.getEnvironment());
-        (outcome.isMatch() ? match : noMatch).add(outcome.getConditionMessage());
+    // Register bean as disposable.
+    try {
+        registerDisposableBeanIfNecessary(beanName, bean, mbd);
     }
-    if (!noMatch.isEmpty()) {
-        return ConditionOutcome.noMatch(ConditionMessage.of(noMatch));
+    catch (BeanDefinitionValidationException ex) {
+        throw new BeanCreationException(
+                mbd.getResourceDescription(), beanName, &quot;Invalid destruction signature&quot;, ex);
     }
-    return ConditionOutcome.match(ConditionMessage.of(match));
-}
 
-private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttributes,
-        PropertyResolver resolver) {
-    Spec spec = new Spec(annotationAttributes);
-    spec.collectProperties(resolver, missingProperties, nonMatchingProperties);
+    return exposedObject;
 }
-
-private void collectProperties(PropertyResolver resolver, List&lt;String&gt; missing,List&lt;String&gt; nonMatching) {
-        if (this.relaxedNames) {
-            resolver = new RelaxedPropertyResolver(resolver, this.prefix);
-        }
-        for (String name : this.names) {
-            String key = (this.relaxedNames ? name : this.prefix + name);
-            if (resolver.containsProperty(key)) {
-                if (!isMatch(resolver.getProperty(key), this.havingValue)) {
-                    nonMatching.add(name);
-                }
-            }
-            else {
-                if (!this.matchIfMissing) {
-                    missing.add(name);
-                }
-            }
-    }
-}
-</code></pre><p>resolver&#x662F;&#x7528;&#x6765;&#x89E3;&#x6790;Environment&#x4E2D;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x7684;&#xFF0C;&#x6240;&#x4EE5;collectProperties()&#x65B9;&#x6CD5;&#x7684;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;&#x5982;&#x679C;resolver&#x5728;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x627E;&#x5230;&#x4E86;spring.aop.auto&#x8FD9;&#x4E2A;key&#x4E14;spring.aop.auto=havingValue&#x5219;&#x5339;&#x914D;&#x6210;&#x529F;&#xFF0C;&#x6216;&#x8005;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x6CA1;&#x6709;spring.aop.auto&#x8FD9;&#x4E2A;key&#x4E14;matchIfMissing&#x4E3A;true&#x5219;&#x5339;&#x914D;&#x6210;&#x529F;&#xFF0C;&#x5176;&#x4ED6;&#x4EFB;&#x4F55;&#x903B;&#x8F91;&#x90FD;&#x662F;&#x5339;&#x914D;&#x5931;&#x8D25;&#x3002;</p>
-<ul>
-<li>&#x770B;&#x5230;&#x8FD9;&#x91CC;&#xFF0C;&#x662F;&#x4E0D;&#x662F;&#x5BF9;&#x6211;&#x4EEC;&#x603B;&#x8FF7;&#x60D1;&#x7684;havingValue&#x548C;matchIfMissing&#x7684;&#x542B;&#x4E49;&#x5F7B;&#x5E95;&#x7684;&#x660E;&#x767D;&#x4E86;&#x3002;&#x6240;&#x4EE5;&#xFF0C;&#x8D70;&#x6E90;&#x7801;&#x53EF;&#x4EE5;&#x4E3A;&#x4F60;&#x89E3;&#x60D1;</li>
-</ul>
-
+</code></pre>
                                 
                                 </section>
                             
@@ -670,12 +717,8 @@ private void collectProperties(PropertyResolver resolver, List&lt;String&gt; mis
 
             
                 
-                <a href="2019-03-31_spring_创建bean过程_todo.html" class="navigation navigation-prev " aria-label="Previous page: spring boot 创建bean过程">
-                    <i class="fa fa-angle-left"></i>
-                </a>
                 
-                
-                <a href="2019-03-25_springaop_自动生成代理源码解析-TODO.html" class="navigation navigation-next " aria-label="Next page: spring boot @AspectJ解析过程与AnnotationAwareAspectJAutoProxyCreator处理过程分析">
+                <a href="2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.html" class="navigation navigation-next navigation-unique" aria-label="Next page: spring boot @ConditionalOnXXX注解集团解析过程源码分析">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -686,7 +729,7 @@ private void collectProperties(PropertyResolver resolver, List&lt;String&gt; mis
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"spring boot @ConditionalOnXXX注解集团解析过程源码分析","level":"1.2.3.2.2","depth":4,"next":{"title":"spring boot @AspectJ解析过程与AnnotationAwareAspectJAutoProxyCreator处理过程分析","level":"1.2.3.2.3","depth":4,"path":"spring源码分析系列/springboot/2019-03-25_springaop_自动生成代理源码解析-TODO.md","ref":"spring源码分析系列/springboot/2019-03-25_springaop_自动生成代理源码解析-TODO.md","articles":[]},"previous":{"title":"spring boot 创建bean过程","level":"1.2.3.2.1","depth":4,"path":"spring源码分析系列/springboot/2019-03-31_spring_创建bean过程_todo.md","ref":"spring源码分析系列/springboot/2019-03-31_spring_创建bean过程_todo.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"spring源码分析系列/springboot/2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.md","mtime":"2019-03-06T09:21:49.767Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-04-14T13:53:06.798Z"},"basePath":"../..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"spring boot 创建bean过程","level":"1.2.3.2.1","depth":4,"next":{"title":"spring boot @ConditionalOnXXX注解集团解析过程源码分析","level":"1.2.3.2.2","depth":4,"path":"spring源码分析系列/springboot/2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.md","ref":"spring源码分析系列/springboot/2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.md","articles":[]},"previous":{"title":"1.3.1 springboot","level":"1.2.3.2","depth":3,"ref":"","articles":[{"title":"spring boot 创建bean过程","level":"1.2.3.2.1","depth":4,"path":"spring源码分析系列/springboot/2019-03-31_spring_创建bean过程_todo.md","ref":"spring源码分析系列/springboot/2019-03-31_spring_创建bean过程_todo.md","articles":[]},{"title":"spring boot @ConditionalOnXXX注解集团解析过程源码分析","level":"1.2.3.2.2","depth":4,"path":"spring源码分析系列/springboot/2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.md","ref":"spring源码分析系列/springboot/2019-03-06_springboot @ConditionalOnXXX注解集团解析过程源码分析.md","articles":[]},{"title":"spring boot @AspectJ解析过程与AnnotationAwareAspectJAutoProxyCreator处理过程分析","level":"1.2.3.2.3","depth":4,"path":"spring源码分析系列/springboot/2019-03-25_springaop_自动生成代理源码解析-TODO.md","ref":"spring源码分析系列/springboot/2019-03-25_springaop_自动生成代理源码解析-TODO.md","articles":[]},{"title":"spring boot BeanFactoryPostProcessory与BeanPostProcessor区别","level":"1.2.3.2.4","depth":4,"path":"spring源码分析系列/springboot/2019-03-24_BeanFactoryPostProcessory与BeanPostProcessor区别.md","ref":"spring源码分析系列/springboot/2019-03-24_BeanFactoryPostProcessory与BeanPostProcessor区别.md","articles":[]},{"title":"spring boot @Configuration标记的类的加载解析","level":"1.2.3.2.5","depth":4,"path":"spring源码分析系列/springboot/2019-03-17_@Configuration标记的类的加载解析.md","ref":"spring源码分析系列/springboot/2019-03-17_@Configuration标记的类的加载解析.md","articles":[]},{"title":"spring boot BeanPostProcessor类集团解析-TODO","level":"1.2.3.2.6","depth":4,"path":"spring源码分析系列/springboot/2019-03-24_BeanPostProcessor类集团解析-TODO.md","ref":"spring源码分析系列/springboot/2019-03-24_BeanPostProcessor类集团解析-TODO.md","articles":[]}]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"spring源码分析系列/springboot/2019-03-31_spring_创建bean过程_todo.md","mtime":"2019-03-31T09:58:35.307Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-04-14T13:53:06.798Z"},"basePath":"../..","book":{"language":""}});
         });
     </script>
 </div>
