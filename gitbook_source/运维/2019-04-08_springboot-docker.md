@@ -166,6 +166,7 @@ mvn clean package docker:build -DskipTests
 构建完可以看下本地生成的文件及目录：
 ![-w355](media/15546944382118.jpg)
 
+
 简单来说，构建过程为首先把jar包和Dockerfile生成到构建目录下，然后执行Dockerfile中的指定，即构建image推到远程docker机器的/var/lib/docker/**/下，如下图
 ![](media/15546964829961.jpg)
 
@@ -283,6 +284,25 @@ services:
 docker-compose up
 docker-compose up -d  // 后台启动并运行容器
 ```
+
+docker run -d \
+    --name mybatis-mysql2 \
+    -e MYSQL_ROOT_PASSWORD=root123 \
+    -e MYSQL_DATABASE=jdbc_test \
+    -e MYSQL_USER=root \
+    -e MYSQL_PASSWORD=root123 \
+    mysql:latest
+
+docker run -d -t \
+    --name demo-springboot-docker \
+    --link mybatis-mysql2:mysql \
+    -p 2372:2371 \
+    -e DATABASE_HOST=mybatis-mysql2 \
+    -e DATABASE_PORT=3306 \
+    -e DATABASE_NAME=jdbc_test \
+    -e DATABASE_USER=root \
+    -e DATABASE_PASSWORD=root123 \
+    springboot_demo/springboot_mybatis
 
 
 
